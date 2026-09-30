@@ -1,0 +1,8 @@
+anime-song/tsumugi
+mir-dataset-loaders/mirdata
+signerlabs/shipswift
+mukul975/cve-mcp-server
+microsoft/playwright-mcp
+makenotion/notion-mcp-server
+cloudflare/mcp-server-cloudflare
+exa-labs/exa-mcp-server
