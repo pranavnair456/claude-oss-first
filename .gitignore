@@ -1,5 +1,3 @@
 __pycache__/
 *.pyc
 .DS_Store
-# your own interests file; interests.example.yml is the one that ships
-config/interests.yml

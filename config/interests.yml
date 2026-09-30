@@ -1,0 +1,52 @@
+# Drives the scheduled radar (.github/workflows/radar.yml -> scripts/radar.sh).
+# Copy to config/interests.yml and edit. Each area produces one digest section.
+
+defaults:
+  per_area: 5             # the transcript's "top five repos every day"
+  min_stars: 40
+  pushed_within_days: 120 # nothing abandoned
+  licenses: [mit, apache-2.0, bsd-3-clause, bsd-2-clause, isc, mpl-2.0]
+  exclude_archived: true
+  exclude_forks: true
+
+areas:
+  - name: Audio and MIR
+    queries:
+      - "music information retrieval"
+      - "audio to midi transcription"
+      - "source separation stems"
+      - "beat downbeat tracking"
+      - "pitch detection f0"
+    languages: [python]
+
+  - name: ML inference and runtime
+    queries:
+      - "onnx runtime inference optimization"
+      - "quantization inference speedup"
+      - "model serving queue gpu"
+    languages: [python, rust, c++]
+
+  - name: Desktop packaging
+    queries:
+      - "electron python sidecar packaging"
+      - "code signing notarization macos"
+      - "tauri python backend"
+    languages: [typescript, javascript, rust]
+
+  - name: iOS and Swift
+    queries:
+      - "swiftui component library"
+      - "testflight fastlane automation"
+      - "audiokit dsp swift"
+    languages: [swift]
+
+  - name: Agent and dev tooling
+    queries:
+      - "claude code plugin skill"
+      - "mcp server"
+      - "llm agent evaluation harness"
+    languages: [typescript, python]
+
+# Repos never to report again, whatever they score.
+mute:
+  - "some-owner/some-repo"
