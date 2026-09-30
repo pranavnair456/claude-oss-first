@@ -49,9 +49,22 @@ ${CLAUDE_PLUGIN_ROOT}/scripts/gh-recon.sh --search "<capability>" --limit 15 --l
 ${CLAUDE_PLUGIN_ROOT}/scripts/gh-recon.sh <owner/repo> <owner/repo> ...
 ```
 
-Run several differently-worded searches. The phrasing a field uses for itself is
-rarely the phrasing you reached for first: search the domain term, the algorithm
-name, and the file format.
+Run several differently-worded searches, and **keep them short**. GitHub ANDs
+every term, so three or four words usually returns nothing at all — not "no good
+match", literally an empty result. Two words is often the ceiling.
+
+Search finds what *describes itself* with your words, which is not the same as
+what is canonical. `"zarr chunked"` returns hobby ports while missing
+`zarr-developers/zarr-python`, because the canonical project's description does
+not happen to use your adjective. So search to *discover* names, then score the
+ones you already know by name directly:
+
+```bash
+gh-recon.sh zarr-developers/zarr-python Blosc/python-blosc2
+```
+
+If a search for a well-known algorithm returns only toy repositories, consider
+that the maintained implementation may already be a library you depend on.
 
 `gh-recon.sh` scores on last push, licence class, contributor count, commits in
 the last 90 days, release presence, and archived/fork status, and emits
@@ -71,6 +84,11 @@ Scores rank; they do not decide. For each finalist, read enough to answer:
 - **If it ships model weights, are the weights licensed?** Permissive code with
   silent checkpoints is the single most common trap in ML repos. The code
   licence does not grant rights to the weights, and the weights are what ships.
+- **If the licence reads `UNREAD`, read it.** GitHub's API returns null for any
+  licence text its classifier does not recognise, which is not the same as an
+  absent licence — alphaTab reports null and is MPL-2.0; python-blosc2 reports
+  null and is BSD-3-Clause. Fetch `LICENSE` through the contents API and read
+  the first line before rejecting anything on this basis.
 - Is there a test suite? Its absence tells you what maintenance will feel like.
 
 ### Step 4 — Deliver a decision, not a list

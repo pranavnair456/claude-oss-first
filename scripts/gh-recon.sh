@@ -29,10 +29,13 @@ done
 if [[ -n $query ]]; then
   # Permissive licences first, and nothing abandoned. Ranking free and
   # maintained above merely popular is the whole point of the stage.
-  mapfile -t found < <(gh search repos "$query" --limit "$limit" \
+  # read loop rather than mapfile: macOS ships bash 3.2, where mapfile does
+  # not exist, and this script should not need a newer bash from Homebrew.
+  while IFS= read -r line; do
+    [[ -n $line ]] && repos+=("$line")
+  done < <(gh search repos "$query" --limit "$limit" \
       ${language:+--language "$language"} \
       --json fullName --jq '.[].fullName' 2>/dev/null)
-  repos+=("${found[@]:-}")
 fi
 ((${#repos[@]})) || die "nothing to score: pass owner/repo or --search"
 
@@ -109,7 +112,13 @@ for slug in "${repos[@]}"; do
     grep -qx -- "$lic_lower" <(in_list deny)   && lic_class="deny"
     [[ $lic_class == review ]] && grep -qx -- "$lic_lower" <(in_list allow) && lic_class="allow"
   fi
-  [[ $spdx == NONE || $spdx == "NOASSERTION" ]] && { lic_class="deny"; spdx="NONE"; }
+  # GitHub returns null for a licence it cannot classify, which is not the same
+  # as an absent licence: alphaTab is MPL-2.0 and reports NONE here. Treat it as
+  # unread rather than absent - it still blocks adoption, but the reason is that
+  # nobody has read it yet.
+  if [[ $spdx == NONE || $spdx == "NOASSERTION" || -z $spdx ]]; then
+    lic_class="unclassified"; spdx="UNREAD"
+  fi
 
   # --- the score ---------------------------------------------------------
   # Maintained and permissive beats popular. A repo nobody can fix is a
@@ -122,6 +131,7 @@ for slug in "${repos[@]}"; do
     allow)  score=$((score+25)) ;;
     review) score=$((score+8));  flags+=("licence $spdx needs a recorded decision") ;;
     deny)   flags+=("licence $spdx is a blocker, not a caveat") ;;
+    unclassified) flags+=("GitHub could not classify the licence: read LICENSE at the source before judging - this is often a real permissive licence GitHub did not recognise, not an absent one") ;;
   esac
   (( contrib >= 10 )) && score=$((score+20)) || { (( contrib >= 3 )) && score=$((score+12)) || flags+=("bus factor $contrib"); }
   (( stars >= 1000 )) && score=$((score+15)) || { (( stars >= 100 )) && score=$((score+10)) || { (( stars >= 20 )) && score=$((score+5)); }; }
@@ -131,8 +141,9 @@ for slug in "${repos[@]}"; do
   [[ $is_fork == true ]] && { score=$((score-15)); flags+=("fork of $parent - prefer the upstream unless the fork is the maintained one"); }
   (( score < 0 )) && score=0
 
-  if   (( score >= 75 )) && [[ $lic_class == allow ]]; then rec="ADOPT"
-  elif (( score >= 45 )) && [[ $lic_class != deny  ]]; then rec="VET"
+  if   (( score >= 75 )) && [[ $lic_class == allow ]];   then rec="ADOPT"
+  elif [[ $lic_class == unclassified ]];                  then rec="READ"
+  elif (( score >= 45 )) && [[ $lic_class != deny  ]];    then rec="VET"
   elif [[ $lic_class == deny ]];                          then rec="REJECT"
   else rec="WEAK"; fi
 
@@ -174,6 +185,6 @@ jq -r '.[] | "### \(.repo)  [\(.recommendation)]\n\(.description)\n" +
   (if .topics != "" then "  topics: \(.topics)\n" else "" end) +
   (if (.flags|length)>0 then "  flags: \(.flags|join(" | "))\n" else "" end)' <<<"$all"
 
-printf 'ADOPT = clear; VET = sandbox-clone.sh then security-scan.sh; REJECT = licence blocks it.\n'
+printf 'ADOPT = clear; VET = sandbox-clone.sh then security-scan.sh; READ = licence unclassified, read it upstream; REJECT = licence blocks it.\n'
 printf 'Nothing above was cloned. Read the code with:\n'
 printf '  gh api repos/<slug>/contents/<path> --jq .content | base64 -d\n'

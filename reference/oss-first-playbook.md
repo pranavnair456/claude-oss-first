@@ -267,27 +267,52 @@ nothing, reporting a clean PASS. Any check whose failure mode is a false pass
 needs a **positive control**: a fixture with known-bad content that must FAIL.
 If the fixture ever passes, the check is broken.
 
-### 6.6 Stars are not maintenance
+### 6.6 Search finds self-description, not canon
+
+GitHub ANDs every search term, so a four-word query routinely returns an empty
+result rather than a worse match — and repo search matches name, description and
+README, so `"zarr chunked"` surfaces hobby ports while missing
+`zarr-developers/zarr-python` entirely. Keep queries to two words, use search to
+discover names, and then score the projects you already know by name. If a
+search for a well-known algorithm returns only toy repositories, the maintained
+implementation may be a library you already depend on.
+
+### 6.7 `UNREAD` is not `unlicensed`
+
+GitHub's API returns null for any licence whose text its classifier does not
+recognise. alphaTab reports null and is MPL-2.0; python-blosc2 reports null and
+is BSD-3-Clause. Rejecting on the API field alone throws away perfectly usable,
+permissively licensed projects. Fetch `LICENSE` through the contents API and
+read the first line. This is cheap and it changes verdicts.
+
+### 6.8 macOS ships bash 3.2
+
+`mapfile`, `readarray`, associative arrays and `${var^^}` are bash 4 features.
+`/bin/bash` on macOS is 3.2 from 2007, and `#!/usr/bin/env bash` finds it first.
+A script using them fails with `command not found` on the one line that mattered
+and otherwise appears to work — in a scanner, that reads as "found nothing".
+
+### 6.9 Stars are not maintenance
 
 A 3,000-star repo with one contributor and no commits in a year is a liability
 with good marketing. Weight last push, bus factor and commit recency above
 popularity. Archived means read-only forever — you are adopting a fork whether
 you meant to or not.
 
-### 6.7 The hand-written version stays behind
+### 6.10 The hand-written version stays behind
 
 Adoption that does not delete what it replaces leaves two implementations, one
 of them untested and both maintained. Name the code being deleted in the
 adoption record, then delete it.
 
-### 6.8 The ledger drifts silently
+### 6.11 The ledger drifts silently
 
 A hand-maintained ledger is accurate the day it is written. Transitive
 dependencies change under it. `collect-licenses.py --against <ledger>` reads
 the lockfiles, asks the registries, and names what is unrecorded — including
 the ledger's own stale rows. Run it in CI, non-blocking at first.
 
-### 6.9 A daily notification you ignore is worse than none
+### 6.12 A daily notification you ignore is worse than none
 
 If the radar files an issue every day, you will stop reading it within a week.
 File nothing when nothing is new, and keep a seen-list so the same repo is
