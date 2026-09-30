@@ -1,0 +1,79 @@
+# Malicious / hostile-code grep corpus for security-scan.sh.
+#
+# Format: severity:::extended-regex:::what it means
+# (::: as the delimiter because the regexes themselves contain | for alternation)
+# severity: high = do not adopt without an explanation; med = read the hit in
+# context; low = note it in the report.
+#
+# These are signals, not proof. A test fixture and an attack look identical to
+# grep. Every hit is reported with file and line so it can be read in context.
+
+# --- remote code execution during install or build -------------------------
+high:::curl[^|;&]*\|[[:space:]]*(ba)?sh:::pipes a download straight into a shell
+high:::wget[^|;&]*\|[[:space:]]*(ba)?sh:::pipes a download straight into a shell
+high:::curl[^;&]*-o[^;&]*&&[^;&]*(chmod|sh ):::downloads then executes a binary
+high:::base64[[:space:]]+(-d|--decode)[^|]*\|[[:space:]]*(ba)?sh:::decodes a blob and shells it
+high:::echo[[:space:]]+[A-Za-z0-9+/=]{80,}[[:space:]]*\|[[:space:]]*base64:::inlined base64 payload
+high:::eval[[:space:]]*\([[:space:]]*(atob|Buffer\.from|base64):::evaluates a decoded blob
+high:::exec[[:space:]]*\([[:space:]]*(requests\.|urllib|urlopen|fetch\():::executes a network response
+high:::(subprocess|os)\.(system|popen|call|run)\([^)]*(requests\.|urlopen|download):::runs what it just downloaded
+
+# --- package-manager lifecycle hooks: the classic supply-chain vector ------
+high:::"(pre|post)install"[[:space:]]*:::npm lifecycle hook runs on install
+high:::"(pre|post)(pack|publish|prepare)"[[:space:]]*:::npm lifecycle hook
+med:::cmdclass[[:space:]]*=:::setup.py overrides a build command
+high:::class[[:space:]]+\w*(Install|Develop|EggInfo)\w*\(:::setup.py subclasses an install command
+high:::(setup|conftest)\.py.*(urlopen|requests\.get|socket\.):::build-time code reaches the network
+
+# --- credential and secret theft ------------------------------------------
+high:::\.ssh/(id_rsa|id_ed25519|id_ecdsa|authorized_keys):::reads private SSH keys
+high:::\.aws/credentials:::reads AWS credentials
+high:::(\.config/gh/hosts\.yml|GH_TOKEN|GITHUB_TOKEN)[^=]*(print|post|send|upload):::exfiltrates a GitHub token
+high:::security[[:space:]]+(find-generic-password|find-internet-password|dump-keychain):::reads the macOS keychain
+high:::(Login Data|Cookies|Local State):::reads browser credential stores
+high:::(keystore|wallet\.dat|\.electrum|metamask):::reads a crypto wallet
+high:::(environ|process\.env)[^;]{0,80}(requests\.post|fetch\(|axios\.post|urlopen):::posts the environment somewhere
+med:::\.netrc:::reads stored credentials
+med:::\.npmrc[^;]*(_authToken|read):::reads the npm auth token
+med:::(\.env|\.env\.local)['"][^;]*(open|read_text|readFile):::reads a dotenv file
+
+# --- exfiltration endpoints ------------------------------------------------
+high:::(pastebin\.com|paste\.ee|ix\.io|termbin|transfer\.sh|0x0\.st|file\.io):::paste/anon-upload service
+high:::(discord(app)?\.com/api/webhooks|hooks\.slack\.com/services):::chat webhook as a drop box
+high:::https?://[0-9]{1,3}(\.[0-9]{1,3}){3}:::hard-coded IP endpoint, no DNS
+high:::(\.onion|t\.me/|api\.telegram\.org/bot):::anonymous command channel
+med:::(ngrok\.io|trycloudflare\.com|serveo\.net|localhost\.run):::tunnel to an unknown host
+
+# --- anti-forensics and persistence ---------------------------------------
+high:::history[[:space:]]+-c:::clears shell history
+high:::(unset|export)[[:space:]]+HIST(FILE|SIZE):::disables shell history
+high:::(launchctl[[:space:]]+load|LaunchAgents|crontab[[:space:]]+-|systemctl[[:space:]]+enable):::installs persistence
+high:::(\.bashrc|\.zshrc|\.profile)[^;]*(>>|append|write):::appends to a shell startup file
+med:::(chattr[[:space:]]+\+i|chflags[[:space:]]+uchg):::makes a file immutable
+
+# --- destructive ----------------------------------------------------------
+high:::rm[[:space:]]+-[rRf]{1,2}[[:space:]]+(/|~|\$HOME)[[:space:]]*$:::deletes a home or root path
+high:::(dd[[:space:]]+if=/dev/(zero|urandom)[[:space:]]+of=/dev/|mkfs\.):::overwrites a device
+high::::\(\)\{[[:space:]]*:\|:&[[:space:]]*\};:::fork bomb
+
+# --- mining and hidden compute -------------------------------------------
+high:::(stratum\+tcp|xmrig|minerd|coinhive|cryptonight|nicehash):::cryptocurrency miner
+med:::(nproc|cpu_count)\(\)[^;]{0,60}(while True|for.*range):::saturates every core
+
+# --- obfuscation ---------------------------------------------------------
+high:::(exec|eval)\([[:space:]]*(bytes|bytearray)\.fromhex:::executes a hex blob
+high:::\\x[0-9a-fA-F]{2}(\\x[0-9a-fA-F]{2}){40,}:::long hex-escaped string
+high:::[A-Za-z0-9+/]{400,}={0,2}:::400+ char base64 blob in source
+med:::(marshal|pickle)\.loads?\([^)]*(open|read|requests):::unpickles untrusted bytes
+med:::getattr\([^,]+,[[:space:]]*['"](system|popen|eval|exec)['"]:::reaches a dangerous builtin by name
+med:::__import__\([[:space:]]*['"]?(os|subprocess|socket):::dynamic import of a process module
+med:::(zlib|lzma|bz2)\.decompress\([^)]*(b'|b"):::inline compressed payload
+
+# --- typosquatting and dependency confusion ------------------------------
+med:::(--index-url|--extra-index-url|registry[[:space:]]*=):::points a package manager at a non-default registry
+med:::pip[[:space:]]+install[^;]*(git\+|http):::installs from a URL rather than an index
+med:::"resolutions"[[:space:]]*:::pins transitive versions, can force a bad one
+
+# --- data collection ----------------------------------------------------
+low:::(posthog|mixpanel|segment\.io|amplitude|google-analytics|sentry_sdk):::telemetry in a library
+low:::(uuid\.getnode|platform\.node|os\.uname|machine-id):::builds a machine fingerprint

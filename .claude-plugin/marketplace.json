@@ -1,0 +1,18 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "oss-first",
+  "description": "Self-hosting marketplace for the oss-first plugin.",
+  "owner": {
+    "name": "Pranav Nair"
+  },
+  "plugins": [
+    {
+      "name": "oss-first",
+      "description": "Research, vet, adopt and monitor open source instead of rebuilding it. Four stages, a hardened quarantine, a free security suite, and a scheduled radar.",
+      "author": { "name": "Pranav Nair" },
+      "category": "security",
+      "source": "./",
+      "homepage": "https://github.com/pranavnair456/claude-oss-first"
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+# License policy for adopting third-party code, weights and binaries.
+#
+# Three verdicts. "allow" may be adopted on the licence's own terms. "review"
+# needs a human decision recorded in the project ledger before adoption.
+# "deny" does not enter the tree.
+#
+# The distinction that matters most in practice is code vs weights. A model
+# repo is routinely permissive in its code and silent or non-commercial in its
+# checkpoints. They are graded separately; the stricter one governs.
+
+allow:
+  # Permissive, safe to link, safe to ship, commercial use unambiguous.
+  - MIT
+  - MIT-0
+  - Apache-2.0
+  - BSD-2-Clause
+  - BSD-3-Clause
+  - ISC
+  - MPL-2.0        # file-level copyleft; keep modifications in their own files
+  - Unlicense
+  - CC0-1.0
+  - PSF-2.0
+  - Zlib
+  - BSL-1.0
+
+review:
+  # Adoptable, but only under a condition that has to be stated and held.
+  - LGPL-2.0-only
+  - LGPL-2.0-or-later
+  - LGPL-2.1-only
+  - LGPL-2.1-or-later
+  - LGPL-3.0-only
+  - LGPL-3.0-or-later
+  # ^ dynamic linking only; never statically linked into a shipped binary
+  - GPL-2.0-only
+  - GPL-2.0-or-later
+  - GPL-3.0-only
+  - GPL-3.0-or-later
+  # ^ running it on your own server is use, not distribution. Shipping a binary
+  #   that contains it is distribution and triggers the source offer. A GPL tool
+  #   invoked as a separate executable over a pipe is not linking.
+  - CDDL-1.0
+  - EPL-2.0
+  - CC-BY-4.0      # attribution obligation must actually be discharged
+  - OFL-1.1
+
+deny:
+  # Does not enter the tree. Each of these has cost real projects real rework.
+  - AGPL-1.0-only
+  - AGPL-3.0-only
+  - AGPL-3.0-or-later
+  # ^ network copyleft reaches a hosted service, not just a shipped binary
+  - CC-BY-NC-4.0
+  - CC-BY-NC-SA-4.0
+  - CC-BY-NC-ND-4.0
+  - CC-BY-SA-4.0   # share-alike on data/weights contaminates derived output
+  - SSPL-1.0
+  - BUSL-1.1       # source-available, not open source; time-delayed
+  - Elastic-2.0
+  - Commons-Clause
+  - CC-BY-ND-4.0
+  - "LicenseRef-Proprietary"
+
+# Treated as deny regardless of what a badge or README claims, because none of
+# them is a grant of rights.
+deny_conditions:
+  - no_license_file          # absence of a licence is "all rights reserved"
+  - research_only            # "for research purposes only", "non-commercial"
+  - weights_unlicensed       # permissive code, silent checkpoints
+  - license_conflict         # LICENSE and package metadata disagree
+  - license_file_modified    # upstream licence text edited in place
+
+# Phrases that force a `review` or `deny` even inside an allowed SPDX id.
+suspect_phrases:
+  - "non-commercial"
+  - "noncommercial"
+  - "research purposes only"
+  - "academic use only"
+  - "evaluation purposes"
+  - "not for production"
+  - "all rights reserved"
+  - "no redistribution"
+
+# Set false for a hobby project to soften commercial-use verdicts to warnings.
+commercial_use_assumed: true

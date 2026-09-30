@@ -1,0 +1,12 @@
+{
+  "name": "oss-first",
+  "description": "Use GitHub as a build resource instead of writing everything yourself: research repos without cloning, vet them in a hardened quarantine with a free security suite, adopt them with recorded provenance, and keep a standing radar on what is new and free.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Pranav Nair"
+  },
+  "homepage": "https://github.com/pranavnair456/claude-oss-first",
+  "repository": "https://github.com/pranavnair456/claude-oss-first",
+  "license": "MIT",
+  "keywords": ["github", "open-source", "security", "supply-chain", "licensing", "provenance", "workflow"]
+}

@@ -1,0 +1,59 @@
+name: radar
+
+# The standing sweep. Free: a public repo gets unlimited Actions minutes, the
+# runner already has `gh`, and GITHUB_TOKEN is injected automatically - so this
+# needs no API key, no secret, and runs with the laptop shut.
+on:
+  schedule:
+    - cron: '17 13 * * *'   # 13:17 UTC daily
+  workflow_dispatch:
+
+permissions:
+  contents: write   # to commit radar/seen.txt so nothing is reported twice
+  issues: write     # to file the digest
+
+concurrency:
+  group: radar
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: sweep
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 scripts/radar.py --output digest.md
+          echo "--- digest ---"
+          cat digest.md
+
+      - name: file the digest, only if it found something
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # A digest with nothing new in it is information, not an issue. Do not
+          # train yourself to ignore a daily notification.
+          if grep -qE '^\*\*0 new candidate' digest.md; then
+            echo "nothing new; no issue filed"
+            exit 0
+          fi
+          gh issue create \
+            --title "OSS radar — $(date -u +%Y-%m-%d)" \
+            --body-file digest.md \
+            --label radar 2>/dev/null \
+          || gh issue create \
+            --title "OSS radar — $(date -u +%Y-%m-%d)" \
+            --body-file digest.md
+
+      - name: remember what was reported
+        run: |
+          if [[ -n "$(git status --porcelain radar/)" ]]; then
+            git config user.name  'github-actions[bot]'
+            git config user.email 'github-actions[bot]@users.noreply.github.com'
+            git add radar/
+            git commit -m "radar: $(date -u +%Y-%m-%d) sweep"
+            git push
+          fi
