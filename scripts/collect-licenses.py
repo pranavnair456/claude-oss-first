@@ -7,7 +7,8 @@
 A hand-maintained ledger drifts the moment a transitive dependency changes.
 This reads the lockfiles - the resolved set, not the declared one - asks the
 public registries what each package is licensed under, and grades the answers
-against config/license-policy.yml.
+against the allow/review/deny tables below. (license-gate.sh is the one that
+reads config/license-policy.yml; this runs standalone in CI with no config.)
 
 `--against` is the part that earns its keep: it does not dump 126 rows at you,
 it names the packages whose licence is not `allow` and which the ledger does
