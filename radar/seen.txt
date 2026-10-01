@@ -6,3 +6,8 @@ microsoft/playwright-mcp
 makenotion/notion-mcp-server
 cloudflare/mcp-server-cloudflare
 exa-labs/exa-mcp-server
+apify/apify-mcp-server
+flux159/mcp-server-kubernetes
+mongodb-js/mongodb-mcp-server
+softeria/ms-365-mcp-server
+arabold/docs-mcp-server
