@@ -11,3 +11,8 @@ flux159/mcp-server-kubernetes
 mongodb-js/mongodb-mcp-server
 softeria/ms-365-mcp-server
 arabold/docs-mcp-server
+awslabs/mcp
+stickerdaniel/linkedin-mcp-server
+haris-musa/excel-mcp-server
+sooperset/mcp-atlassian
+blazickjp/arxiv-mcp-server
