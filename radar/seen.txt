@@ -16,3 +16,8 @@ stickerdaniel/linkedin-mcp-server
 haris-musa/excel-mcp-server
 sooperset/mcp-atlassian
 blazickjp/arxiv-mcp-server
+jpisnice/shadcn-ui-mcp-server
+cursortouch/windows-mcp
+mixelpixx/kicad-mcp-server
+qdrant/mcp-server-qdrant
+alpacahq/alpaca-mcp-server
