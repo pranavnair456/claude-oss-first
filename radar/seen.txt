@@ -21,3 +21,8 @@ cursortouch/windows-mcp
 mixelpixx/kicad-mcp-server
 qdrant/mcp-server-qdrant
 alpacahq/alpaca-mcp-server
+tensorblock/awesome-mcp-servers
+antvis/mcp-server-chart
+designcomputer/mysql_mcp_server
+modelcontextprotocol/inspector
+figma/mcp-server-guide
