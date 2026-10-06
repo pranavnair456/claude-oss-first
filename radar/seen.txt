@@ -26,3 +26,4 @@ antvis/mcp-server-chart
 designcomputer/mysql_mcp_server
 modelcontextprotocol/inspector
 figma/mcp-server-guide
+daxianlee/cocos-mcp-server
